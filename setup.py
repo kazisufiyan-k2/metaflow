@@ -1,28 +1,40 @@
-import os, glob
+import os
+import glob
+
 from setuptools import setup, find_packages
 
-with open("metaflow/version.py", mode="r") as f:
-    version = f.read().splitlines()[0].split("=")[1].strip(" \"'")
+
+def get_version() -> str:
+    """Read the version string from metaflow/version.py."""
+    with open("metaflow/version.py", mode="r") as f:
+        return f.read().splitlines()[0].split("=")[1].strip(" \"'")
 
 
-def find_devtools_files():
-    filepaths = []
-    for path in glob.iglob("devtools/**/*", recursive=True):
-        if os.path.isfile(path):
-            filepaths.append(path)
-    return filepaths
+def find_devtools_files() -> list[str]:
+    """Recursively collect all files under the devtools directory."""
+    return [
+        path
+        for path in glob.iglob("devtools/**/*", recursive=True)
+        if os.path.isfile(path)
+    ]
 
 
 setup(
-    include_package_data=True,
+    # ------------------------------------------------------------------ #
+    # Package identity                                                     #
+    # ------------------------------------------------------------------ #
     name="metaflow",
-    version=version,
+    version=get_version(),
     description="Metaflow: More AI and ML, Less Engineering",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     author="Metaflow Developers",
     author_email="help@metaflow.org",
     license="Apache Software License",
+
+    # ------------------------------------------------------------------ #
+    # PyPI classifiers                                                     #
+    # ------------------------------------------------------------------ #
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: Apache Software License",
@@ -38,31 +50,53 @@ setup(
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3.13",
     ],
+
+    # ------------------------------------------------------------------ #
+    # Project links shown on PyPI                                          #
+    # ------------------------------------------------------------------ #
     project_urls={
         "Source": "https://github.com/Netflix/metaflow",
         "Issues": "https://github.com/Netflix/metaflow/issues",
         "Documentation": "https://docs.metaflow.org",
     },
+
+    # ------------------------------------------------------------------ #
+    # Package discovery and data                                           #
+    # ------------------------------------------------------------------ #
     packages=find_packages(exclude=["metaflow_test"]),
-    py_modules=[
-        "metaflow",
-    ],
+    py_modules=["metaflow"],
+    include_package_data=True,
     package_data={
         "metaflow": [
-            "tutorials/*/*",
-            "plugins/env_escape/configurations/*/*",
-            "py.typed",
-            "**/*.pyi",
+            "tutorials/*/*",                          # bundled tutorial files
+            "plugins/env_escape/configurations/*/*",  # env escape configs
+            "py.typed",                               # PEP 561 marker
+            "**/*.pyi",                               # type stub files
         ]
     },
+
+    # Installs devtools files into share/metaflow/devtools
     data_files=[("share/metaflow/devtools", find_devtools_files())],
-    entry_points="""
-        [console_scripts]
-        metaflow=metaflow.cmd.main_cli:start
-        metaflow-dev=metaflow.cmd.make_wrapper:main
-      """,
-    install_requires=["requests", "boto3"],
+
+    # ------------------------------------------------------------------ #
+    # CLI entry points                                                     #
+    # ------------------------------------------------------------------ #
+    entry_points={
+        "console_scripts": [
+            "metaflow=metaflow.cmd.main_cli:start",        # main CLI
+            "metaflow-dev=metaflow.cmd.make_wrapper:main", # dev wrapper CLI
+        ]
+    },
+
+    # ------------------------------------------------------------------ #
+    # Dependencies                                                         #
+    # ------------------------------------------------------------------ #
+    install_requires=[
+        "requests",  # HTTP client for API calls
+        "boto3",     # AWS SDK for S3 and cloud integrations
+    ],
     extras_require={
-        "stubs": ["metaflow-stubs==%s" % version],
+        # Install matching type stubs: pip install metaflow[stubs]
+        "stubs": ["metaflow-stubs==%s" % get_version()],
     },
 )
