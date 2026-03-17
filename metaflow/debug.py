@@ -9,9 +9,7 @@ from .util import is_stringish
 # Set
 #
 # - METAFLOW_DEBUG_SUBCOMMAND=1
-#   to see command lines used to launch subcommands (especially 'step')
-# - METAFLOW_DEBUG_SIDECAR=1
-#   to see command lines used to launch sidecars
+#   to see command nch sidecars
 # - METAFLOW_DEBUG_S3CLIENT=1
 #   to see command lines used by the S3 client. Note that this environment
 #   variable also disables automatic cleaning of subdirectories, which can
